@@ -35,3 +35,5 @@ hello/
 spider/
 
 
+bin/
+pkg/
