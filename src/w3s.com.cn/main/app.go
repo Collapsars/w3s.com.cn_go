@@ -20,8 +20,10 @@ type Article struct {
 var c chan int
 
 func main() {
+	for i := 0 ; i < 4 ; i++  {
+		go Scrape("http://www.runoob.com/")
+	}
 
-	Scrape("http://www.runoob.com/")
 
 
 	fmt.Println(<- c)
@@ -44,7 +46,7 @@ func Scrape(url string , ) () {
 	})
 	//主页
 	//home := make([]string,0,200) // 首页导航标签切片
-	//home = append(home,"http://www.runoob.com/html/html-tutorial.html")
+	//home = append(home,"http://www.runoob.com/cprogramming/c-tutorial.html")
 
 	page := make([]string,0,200) //每个导航页面切片
 	for _ , value := range home {
@@ -83,7 +85,7 @@ func Scrape(url string , ) () {
 	//pagee := make([]string,0,200) //每个导航页面切片
 	for _ , value := range page {
 
-		go loop(value,db)
+		 loop(value,db)
 
 	}
 
@@ -91,7 +93,7 @@ func Scrape(url string , ) () {
 	//defer db.Close()
 
 
-
+	c <- 1
 	//fmt.Println("end")
 
 
@@ -148,7 +150,7 @@ func loop(str string,db *gorm.DB)  {
 		//loop("http://www.runoob.com"+a_name,db)
 	})
 
-	c <- 1
+
 
 
 
