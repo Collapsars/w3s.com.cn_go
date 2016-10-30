@@ -28,7 +28,7 @@ var (
 	maxRoutineNum = 10
 )
 
-
+//下载图片
 func main()  {
 	fmt.Println("start")
 

@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"time"
 )
 
 type Article struct {
@@ -21,6 +22,7 @@ var (
 	maxRoutineNum = 10
 )
 
+//爬取每个教程
 func main() {
 
 	fmt.Println("start")
@@ -103,7 +105,7 @@ func Scrape(url string ,ch chan int) () {
 
 
 	//c <- 1
-	//fmt.Println("end")
+	fmt.Println("end")
 
 
 }
@@ -158,7 +160,7 @@ func loop(str string,db *gorm.DB,ch chan  int)  {
 
 		//loop("http://www.runoob.com"+a_name,db)
 	})
-
+	fmt.Println(time.Now().UnixNano())
 	<-ch
 
 

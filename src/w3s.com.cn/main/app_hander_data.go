@@ -7,6 +7,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/PuerkitoBio/goquery"
 	"strings"
+	"time"
 )
 
 
@@ -19,44 +20,65 @@ type Article struct {
 	Content string
 }
 
+var (
+	maxRoutineNum = 10
+)
+
+//移除多余的html　含广告
 func main() {
 	fmt.Println("start")
+
+	ch := make(chan int , maxRoutineNum)
 
 	//连接数据库
 	db, err := gorm.Open("postgres", "host=localhost user=postgres dbname=w3s_dev sslmode=disable password=root")
 	utils.CheckErr(err)
 
 	articles := []Article{}
-	db.Find(&articles)
+	db.Where("type = 1").Find(&articles)
 
 	for _,value := range articles {
+		ch <- 1
+       		go func() {
+			doc , err := goquery.NewDocumentFromReader(strings.NewReader(value.Content))
+			utils.CheckErr(err)
 
-		doc , err := goquery.NewDocumentFromReader(strings.NewReader(value.Content))
-		utils.CheckErr(err)
-		//移除右边
-		doc.Find(".right-column").Each(func(i int , s *goquery.Selection) {
-			s.Remove()
-		})
-		//移除广告
-		doc.Find("ins").Each(func(i int , s *goquery.Selection) {
-			s.Remove()
-		})
-		//移除google script广告
-		doc.Find("script").Each(func(i int , s *goquery.Selection) {
-			s.Remove()
-		})
+			//移除右边
+			doc.Find(".right-column").Each(func(i int , s *goquery.Selection) {
+				s.Remove()
+			})
+			//移除广告
+			doc.Find("ins").Each(func(i int , s *goquery.Selection) {
+				s.Remove()
+			})
+			//移除google script广告
+			doc.Find("script").Each(func(i int , s *goquery.Selection) {
+				s.Remove()
+			})
+
+			//移除google script广告
+			doc.Find("script").Each(func(i int , s *goquery.Selection) {
+				s.Remove()
+			})
+
+			//移除试一试菜鸟工具
+			doc.Find("#RightPane .pull-right a").Each(func(i int , s *goquery.Selection) {
+				s.Remove()
+			})
 
 
-		//article := Article{};
-		//article.Id =  value.Id
+			//article := Article{};
+			//article.Id =  value.Id
 
-		value.Content,err = doc.Html()
+			value.Content,err = doc.Html()
 
-		//Content,err := doc.Html()
+			//Content,err := doc.Html()
 
-		//fmt.Println(article)
-		db.Save(&value)
-
+			//fmt.Println(article)
+			fmt.Println(time.Now().UnixNano())
+			db.Save(&value)
+			<- ch
+		}()
 		//fmt.Println(doc.Html())
 
 	}
@@ -69,7 +91,7 @@ func main() {
 
 
 
-
+	fmt.Println("end")
 	defer db.Close()
 
 

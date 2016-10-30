@@ -20,8 +20,15 @@ type Article struct {
 	Content string
 }
 
+var (
+	maxRoutineNum = 10
+)
+
+//去除试一试中的脚本
 func main() {
 	fmt.Println("start")
+
+	ch := make(chan int , maxRoutineNum)
 
 	//连接数据库
 	db, err := gorm.Open("postgres", "host=localhost user=postgres dbname=w3s_dev sslmode=disable password=root")
@@ -40,14 +47,16 @@ func main() {
 
 		doc.Find(".middle-column .tryitbtn").Each(func(i int , s *goquery.Selection) {
 			tryLink , _ := s.Attr("href")
-			spiderTryLinkk(tryLink,db)
+			ch <- 1
+			go spiderTryLinkk(tryLink,db,ch)
 		})
 
 
 
 		doc.Find(".middle-column .showbtn").Each(func(i int , s *goquery.Selection) {
 			tryLink , _ := s.Attr("href")
-			spiderTryLinkk(tryLink,db)
+			ch <- 1
+			go spiderTryLinkk(tryLink,db,ch)
 		})
 
 
@@ -66,7 +75,7 @@ func main() {
 }
 
 //下载连接
-func spiderTryLinkk(url string,db *gorm.DB)  {
+func spiderTryLinkk(url string,db *gorm.DB,ch chan int)  {
 
 
 
@@ -74,7 +83,6 @@ func spiderTryLinkk(url string,db *gorm.DB)  {
 	articlee :=Article{}
 	db.Where("path = ?", url).First(&articlee)
 	if  articlee.Id > 0{
-
 		html , err := goquery.NewDocument("http://www.runoob.com"+url)
 		utils.CheckErr(err)
 		//找到.panel-body
@@ -96,14 +104,10 @@ func spiderTryLinkk(url string,db *gorm.DB)  {
 				db.Save(&articlee)
 
 			}
-
-
 		})
-
-
-
 	}
 
+	<- ch
 
 
 
