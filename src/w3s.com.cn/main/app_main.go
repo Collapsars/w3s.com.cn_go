@@ -27,7 +27,7 @@ var (
 func main()  {
 	fmt.Println("start")
 	ch := make(chan int , maxRoutineNum)
-	for  i := 0; i< 50 ; i++ {
+	for  i := 0; i< 10 ; i++ {
 		spiderMain("http://www.runoob.com/sitemap",ch)
 	}
 	//spiderMain("http://www.runoob.com/sitemap",ch)
